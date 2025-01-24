@@ -3,10 +3,10 @@ name: Deploy Lambda with AWS OIDC
 on:
   pull_request:
     branches:
-      - master  # When a PR is raised to master, run `sam build`
+      - main  # When a PR is raised to master, run `sam build`
   push:
     branches:
-      - master  # When changes are merged to master, run `sam build` and `sam deploy`
+      - main  # When changes are merged to master, run `sam build` and `sam deploy`
 
 permissions:
   id-token: write  # Required for OIDC authentication
