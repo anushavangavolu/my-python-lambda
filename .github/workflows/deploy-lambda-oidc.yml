@@ -1,0 +1,59 @@
+name: Deploy Lambda with AWS OIDC
+
+on:
+  pull_request:
+    branches:
+      - master  # When a PR is raised to master, run `sam build`
+  push:
+    branches:
+      - master  # When changes are merged to master, run `sam build` and `sam deploy`
+
+permissions:
+  id-token: write  # Required for OIDC authentication
+  contents: read   # Required to checkout code
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::627891768467:role/GitHubECRPushRole
+          aws-region: us-east-1  # Change to your AWS region
+
+      - name: Install AWS SAM CLI
+        run: |
+          pip install aws-sam-cli
+
+      - name: Build the SAM application
+        run: sam build
+
+  deploy:
+    if: github.event_name == 'push'  # Deploy only when merged to master
+    runs-on: ubuntu-latest
+    needs: build  # Ensure deployment runs after the build job
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::627891768467:role/GitHubECRPushRole
+          aws-region: us-east-1  # Change to your AWS region
+
+      - name: Install AWS SAM CLI
+        run: |
+          pip install aws-sam-cli
+
+      - name: Build the SAM application
+        run: sam build
+
+      - name: Deploy the SAM application
+        run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
